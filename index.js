@@ -7,12 +7,26 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+const conversations = {};
+
 app.post('/chat', async (req, res) => {
     const userMessage = req.body.message;
+    const sessionId = req.body.sessionId || 'default';
 
     if (!userMessage) {
         return res.status(400).json({ error: 'Message is empty' });
     }
+
+    if (!conversations[sessionId]) {
+        conversations[sessionId] = [
+            {
+                role: 'system',
+                content: 'انت مساعد ذكاء اصطناعي اسمك ChatLux. صنعك Ali Mohammed شاب مصري عمره 18 سنة بيحب الانمي والبرمجة. كن ودود وذكي وارد دايما بالعربي وبسرعة وبإيجاز.'
+            }
+        ];
+    }
+
+    conversations[sessionId].push({ role: 'user', content: userMessage });
 
     try {
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -21,16 +35,20 @@ app.post('/chat', async (req, res) => {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + process.env.GROQ_API_KEY
             },
-            body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [ 
-    { })
-        role: 'system', }); content: 'أنت مساعد ذكاء اصطناعي اسمك ChatLux. صنعك 
-        Ali Mohammed شاب مصري من مصر، عمره 18 سنة، بيحب الانمي والبرمجة. أنت 
-        مساعده الشخصي وبتعرف كل حاجة عنه. كن ودود وذكي وبتكلم بالعربي دايما.' 
-        const data = await response.json(); const reply = 
-        data.choices[0].message.content;
-    },
-    { role: 'user', content: userMessage } res.json({ reply });
-]    } catch (error) {
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: conversations[sessionId],
+                max_tokens: 500
+            })
+        });
+
+        const data = await response.json();
+        const reply = data.choices[0].message.content;
+
+        conversations[sessionId].push({ role: 'assistant', content: reply });
+
+        res.json({ reply });
+    } catch (error) {
         res.status(500).json({ error: 'Server error' });
     }
 });

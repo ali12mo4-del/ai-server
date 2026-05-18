@@ -21,17 +21,16 @@ app.post('/chat', async (req, res) => {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + process.env.GROQ_API_KEY
             },
-            body: JSON.stringify({
-model: 'llama-3.3-70b-versatile',
-                messages: [{ role: 'user', content: userMessage }]
-            })
-        });
-
-        const data = await response.json();
-        const reply = data.choices[0].message.content;
-
-        res.json({ reply });
-    } catch (error) {
+            body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [ 
+    { })
+        role: 'system', }); content: 'أنت مساعد ذكاء اصطناعي اسمك ChatLux. صنعك 
+        Ali Mohammed شاب مصري من مصر، عمره 18 سنة، بيحب الانمي والبرمجة. أنت 
+        مساعده الشخصي وبتعرف كل حاجة عنه. كن ودود وذكي وبتكلم بالعربي دايما.' 
+        const data = await response.json(); const reply = 
+        data.choices[0].message.content;
+    },
+    { role: 'user', content: userMessage } res.json({ reply });
+]    } catch (error) {
         res.status(500).json({ error: 'Server error' });
     }
 });
